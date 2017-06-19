@@ -10,10 +10,7 @@ package acquiring.retail.vladimir.clientside.task;
 public class Service {
     public final static String QR_CODE = "d01b9554979bbee8d824b7607cc37821";
     public final static String SERVICE_HOST = "http://dev.eosan.ru:23232";
-    public final static String PHONE_NUMBER = "79037979959";
-    public final static String MIDDLE_NAME = "Иванович";
-    public final static String LAST_NAME = "Пугачев";
-    public final static String FIRST_NAME = "Емельян";
+    public final static String SERVICE_PREFERENCE_NAME = "eosan.client.side.sbrf.v1";
 
     public final static String ENGINE_TYPE_2D = "00000000-0000-1000-0008-000000000001";
     public final static String ENGINE_TYPE_3D = "00000000-0000-1000-0008-000000000002";

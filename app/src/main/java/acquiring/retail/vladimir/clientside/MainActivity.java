@@ -1,21 +1,25 @@
 package acquiring.retail.vladimir.clientside;
 
 import android.Manifest;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-//import android.support.design.widget.FloatingActionButton;
-//import android.support.design.widget.Snackbar;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
-import android.view.View;
+import android.telephony.TelephonyManager;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.WindowManager;
+import android.view.inputmethod.EditorInfo;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import com.github.clans.fab.FloatingActionButton;
@@ -31,6 +35,10 @@ import acquiring.retail.vladimir.clientside.task.AuthSession;
 import acquiring.retail.vladimir.clientside.task.AuthTask;
 
 import static acquiring.retail.vladimir.clientside.task.Service.QR_CODE;
+import static acquiring.retail.vladimir.clientside.task.Service.SERVICE_PREFERENCE_NAME;
+
+//import android.support.design.widget.FloatingActionButton;
+//import android.support.design.widget.Snackbar;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -79,9 +87,30 @@ public class MainActivity extends AppCompatActivity {
                             getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
                             if (session!=null) {
                                 showToast("session opened");
-                                Intent intent = new Intent(MainActivity.this, LoadProfileActivity.class);
-                                intent.putExtra("session", session.getBundle());
-                                startActivity(intent);
+
+                                final SharedPreferences settings = getSharedPreferences(SERVICE_PREFERENCE_NAME, MODE_PRIVATE);
+                                String phone = settings.getString("profile.info.phone","");
+                                if (phone.trim().length()==0)
+                                    phone = getPhoneNumber();
+                                if (phone.trim().length()==0) {
+                                    showPhoneAlert(new alertOk() {
+                                        @Override
+                                        public void ok(String phone) {
+                                            if (phone.trim().length()>0) {
+                                                SharedPreferences.Editor settingsEditor = settings.edit();
+                                                settingsEditor.putString("profile.info.phone",phone);
+                                                settingsEditor.apply();
+                                                Intent intent = new Intent(MainActivity.this, LoadProfileActivity.class);
+                                                intent.putExtra("session", session.getBundle());
+                                                startActivity(intent);
+                                            }
+                                        }
+                                    });
+                                } else {
+                                    Intent intent = new Intent(MainActivity.this, LoadProfileActivity.class);
+                                    intent.putExtra("session", session.getBundle());
+                                    startActivity(intent);
+                                }
                             } else {
                                 showToast("Невозможно инициализировать сессию");
                             }
@@ -100,7 +129,6 @@ public class MainActivity extends AppCompatActivity {
         floatingActionButton3.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 //TODO something when floating action menu third item clicked
-
             }
         });
 
@@ -113,6 +141,18 @@ public class MainActivity extends AppCompatActivity {
         //    }
         //});
         checkAndRequestPermissions();
+    }
+
+    private String getPhoneNumber() {
+        try {
+            TelephonyManager tMgr = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+            String phone = tMgr.getLine1Number();
+            if (phone!=null && phone.trim().length()>0)
+                return phone;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "";
     }
 
     @Override
@@ -188,5 +228,33 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT).show();
                 }
             });
+    }
+
+    private interface alertOk {
+        void ok(String phone);
+    }
+
+    private AlertDialog createPhoneAlertDialog(final alertOk event) {
+        final AlertDialog.Builder alert = new AlertDialog.Builder(this);
+        final EditText phoneEdit = new EditText(this);
+        phoneEdit.setInputType(EditorInfo.TYPE_CLASS_PHONE);
+        alert.setMessage("Личные данные");
+        alert.setTitle("Введите номер телефона");
+        alert.setView(phoneEdit);
+        alert.setPositiveButton("Ок", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                String phone = phoneEdit.getText().toString();
+                if (event!=null) event.ok(phone);
+            }
+        });
+        return alert.create();
+    }
+    private void showPhoneAlert(final alertOk event) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                createPhoneAlertDialog(event).show();
+            }
+        });
     }
 }

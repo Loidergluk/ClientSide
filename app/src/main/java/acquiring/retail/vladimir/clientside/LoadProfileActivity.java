@@ -20,7 +20,7 @@ import acquiring.retail.vladimir.clientside.task.Profile;
 import acquiring.retail.vladimir.clientside.task.ProfileListener;
 
 import static acquiring.retail.vladimir.clientside.task.LoadProfileTask.PROFILE_NOT_FOUND_ERROR;
-import static acquiring.retail.vladimir.clientside.task.Service.PHONE_NUMBER;
+import static acquiring.retail.vladimir.clientside.task.Service.SERVICE_PREFERENCE_NAME;
 
 public class LoadProfileActivity extends AppCompatActivity {
 
@@ -35,7 +35,7 @@ public class LoadProfileActivity extends AppCompatActivity {
             @Override
             public void onSuccess(Profile profile) {
                 showToast("Load profile");
-                SharedPreferences settings = getSharedPreferences("eosan.biometricpay", MODE_PRIVATE);
+                SharedPreferences settings = getSharedPreferences(SERVICE_PREFERENCE_NAME, MODE_PRIVATE);
                 SharedPreferences.Editor e = settings.edit();
                 e.putString("profile.info.phone", profile.getPhoneNumber());
                 e.putString("profile.info.firstName", profile.getFirstName());
@@ -63,7 +63,7 @@ public class LoadProfileActivity extends AppCompatActivity {
             @Override
             public void onSuccess(Profile profile) {
                 showToast("Create new profile");
-                SharedPreferences settings = getSharedPreferences("eosan.biometricpay", MODE_PRIVATE);
+                SharedPreferences settings = getSharedPreferences(SERVICE_PREFERENCE_NAME, MODE_PRIVATE);
                 SharedPreferences.Editor e = settings.edit();
                 e.putString("profile.info.phone", profile.getPhoneNumber());
                 e.putString("profile.info.firstName", profile.getFirstName());
@@ -81,18 +81,6 @@ public class LoadProfileActivity extends AppCompatActivity {
         }).execute(phone);
     }
 
-    private String getPhoneNumber() {
-        try {
-            TelephonyManager tMgr = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-            String phone = tMgr.getLine1Number();
-            if (phone!=null && phone.trim().length()>0)
-                return phone;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return PHONE_NUMBER;
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -103,38 +91,14 @@ public class LoadProfileActivity extends AppCompatActivity {
         final AuthSession session = new AuthSession(this.getIntent().getBundleExtra("session"));
         if (session.getSessionId() == null || session.getSessionId().length() == 0)
             prevActivity();
-        SharedPreferences settings = getSharedPreferences("eosan.biometricpay", MODE_PRIVATE);
+        SharedPreferences settings = getSharedPreferences(SERVICE_PREFERENCE_NAME, MODE_PRIVATE);
         String phone = settings.getString("profile.info.phone","");
         final String firstName = settings.getString("profile.info.firstName","");
         final String lastName = settings.getString("profile.info.lastName","");
         final String middleName = settings.getString("profile.info.middleName","");
         if (phone.trim().length()==0)
-            phone = getPhoneNumber();
-        if (phone.trim().length()==0) {
-            AlertDialog.Builder alert = new AlertDialog.Builder(this);
-            final EditText phoneEdit = new EditText(getApplicationContext());
-            phoneEdit.setInputType(EditorInfo.TYPE_CLASS_PHONE);
-            alert.setMessage("Личные данные");
-            alert.setTitle("Введите номер телефона");
-            alert.setView(phoneEdit);
-            alert.setPositiveButton("Ок", new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int whichButton) {
-                    String phone = phoneEdit.getText().toString();
-                    if (phone.trim().length()>0)
-                        loadProfile(session, firstName, lastName, middleName, phone);
-                    else
-                        prevActivity();
-                }
-            });
-
-            alert.setNegativeButton("Отмена", new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int whichButton) {
-                    prevActivity();
-                }
-            });
-        } else {
-            loadProfile(session, firstName, lastName, middleName, phone);
-        }
+            prevActivity();
+        loadProfile(session, firstName, lastName, middleName, phone);
     }
 
     private void prevActivity() {

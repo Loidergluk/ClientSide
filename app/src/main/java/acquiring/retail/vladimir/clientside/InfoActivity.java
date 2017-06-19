@@ -12,6 +12,8 @@ import acquiring.retail.vladimir.clientside.task.Profile;
 import acquiring.retail.vladimir.clientside.task.ProfileListener;
 import acquiring.retail.vladimir.clientside.task.UpdateProfileTask;
 
+import static acquiring.retail.vladimir.clientside.task.Service.SERVICE_PREFERENCE_NAME;
+
 public class InfoActivity extends AppCompatActivity {
 
     private AuthSession session;
@@ -29,7 +31,7 @@ public class InfoActivity extends AppCompatActivity {
         EditText firstName = (EditText) findViewById(R.id.firstName);
         EditText lastName = (EditText) findViewById(R.id.lastName);
         EditText middleName = (EditText) findViewById(R.id.middleName);
-        SharedPreferences settings = getSharedPreferences("eosan.biometricpay", MODE_PRIVATE);
+        SharedPreferences settings = getSharedPreferences(SERVICE_PREFERENCE_NAME, MODE_PRIVATE);
         phone.setText(settings.getString("profile.info.phone",""));
         firstName.setText(settings.getString("profile.info.firstName",""));
         lastName.setText(settings.getString("profile.info.lastName",""));
@@ -62,7 +64,7 @@ public class InfoActivity extends AppCompatActivity {
         new UpdateProfileTask(session, profile, new ProfileListener() {
             @Override
             public void onSuccess(Profile profile) {
-                SharedPreferences settings = getSharedPreferences("eosan.biometricpay", MODE_PRIVATE);
+                SharedPreferences settings = getSharedPreferences(SERVICE_PREFERENCE_NAME, MODE_PRIVATE);
                 SharedPreferences.Editor e = settings.edit();
                 e.putString("profile.info.phone", phone.getText().toString());
                 e.putString("profile.info.firstName", firstName.getText().toString());
