@@ -59,6 +59,7 @@ public class AddFace2Activity extends AppCompatActivity {
                 Intent intent = new Intent(AddFace2Activity.this, AddFaceActivity.class);
                 intent.putExtra("session",session.getBundle());
                 intent.putExtra("profile", profile.getBundle());
+                intent.putExtra("can_redirect_face2",false);
                 startActivity(intent);
             }
         });

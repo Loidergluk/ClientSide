@@ -44,6 +44,7 @@ public class AddVoice3Activity extends AppCompatActivity {
                 Intent intent = new Intent(AddVoice3Activity.this, AddFaceActivity.class);
                 intent.putExtra("session",session.getBundle());
                 intent.putExtra("profile", profile.getBundle());
+                intent.putExtra("can_redirect_face2",true);
                 startActivity(intent);
             }
         });

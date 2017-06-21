@@ -52,6 +52,7 @@ public class SelectMethodActivity extends AppCompatActivity {
                 Intent intent = new Intent(SelectMethodActivity.this, AddFaceActivity.class);
                 intent.putExtra("session",session.getBundle());
                 intent.putExtra("profile", profile.getBundle());
+                intent.putExtra("can_redirect_face2",true);
                 startActivity(intent);
             }
         });

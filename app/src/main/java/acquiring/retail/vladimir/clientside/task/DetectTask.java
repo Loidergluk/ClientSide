@@ -105,6 +105,7 @@ public class DetectTask extends AsyncTask<Bitmap,Void,String> {
         jsonObject.put("status", "new");
         jsonObject.put("fileName", "new_photo.jpeg");
         jsonObject.put("toProfileId", profile.getId());
+        jsonObject.put("setDefaultPortrait", true);
         URL url = new URL(SERVICE_HOST + "/ui/v1/registry/async-actions/"+aa.getId()+"/upload-profiles/");
         HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
         try {
@@ -371,19 +372,21 @@ public class DetectTask extends AsyncTask<Bitmap,Void,String> {
                                 up = nup;
                             }
                             count++;
-                            if (count>10) {
+                            if (count>15) {
                                 break;
                             }
                         }
                         if ("detected".equals(up.getStatus())) {
-                          portraitPhotoId = loadProfilePhoto();
+                            portraitPhotoId = loadProfilePhoto();
+                            return null;
                         }
                     }
                 }
+                return "Процесс обработки фото не завершен, попробуйте еще раз";
             } catch (Exception e) {
                 e.printStackTrace();
+                return e.getMessage();
             }
         }
-        return portraitPhotoId;
     }
 }
